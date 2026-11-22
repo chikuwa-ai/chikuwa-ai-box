@@ -163,7 +163,7 @@
     if (budgetCap <= 3000) {
       if (goals.has('coding') && !goals.has('storage')) {
         pickedIds = goals.has('research_writing') ? ['claude_pro'] : ['cursor_pro'];
-        reason = '月3,000円前後の1本枠で非エンジニアのツール自作も狙うなら、文章と開発の両輪を回せる Claude Pro（またはエディタ操作重視で Cursor Pro）が最もコスパ良く回収できます。';
+        reason = '月3,000円前後の1本枠で非エンジニアのツール自作も狙うなら、文章と開発の両輪を回せる Claude Pro（またはエディタ操作重視で Cursor Plus $8）が最もコスパ良く回収できます。';
         skipAdvice = 'いきなり複数のAIや上位Maxプラン（$100）に入る必要はありません。まずは1本だけ使い倒しましょう。';
       } else if (goals.has('storage') || goals.has('automation')) {
         pickedIds = ['google_ai_pro'];
@@ -185,8 +185,8 @@
         if (pickedIds[0] === 'claude_pro' && toJpy(byId.claude_pro) + toJpy(byId.cursor_pro) > budgetCap) {
           pickedIds = ['google_ai_pro', 'cursor_pro'];
         }
-        reason = '日常のリサーチ・設計担当（Google AI Pro または Claude Pro）と、実際のツール自作担当（Cursor Pro）の2本柱。非エンジニアが「月10時間以上の時短＋ツール制作」に踏み込む最強の実用セットです。';
-        skipAdvice = '月$100の Claude Max はまだ不要です。$20枠を2つ組み合わせる方がカバー範囲が広くなります。';
+        reason = '日常のリサーチ・設計担当（Google AI Pro または Claude Pro）と、実際のツール自作担当（Cursor Plus）の2本柱。非エンジニアが「月10時間以上の時短＋ツール制作」に踏み込む最強の実用セットです。';
+        skipAdvice = '月$100の Claude Max はまだ不要です。まずは定番＋手頃枠を組み合わせる方がカバー範囲が広くなります。';
       } else if (goals.has('creative')) {
         pickedIds = [baseId, 'suno_pro', 'midjourney_basic'];
         if (totalOf(pickedIds) > budgetCap) {

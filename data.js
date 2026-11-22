@@ -11,7 +11,7 @@ const SITE_CONFIG = {
   authorName: 'ちくわ',
   xHandle: '@chikuwa_ai_box', // ← あなたのXハンドル（@付き）に書き換えてください
   noteUrl: 'https://note.com/', // ← あなたのnoteプロフィールまたは記事URLに書き換えてください
-  updatedAt: '2026年11月',
+  updatedAt: '2026年11月22日',
   defaultUsdJpy: 155,
   siteUrlHint: '' // 空文字の場合、公開時の現在URL（https://〜）を自動で使用します
 };
@@ -148,20 +148,20 @@ const SUBSCRIPTIONS = [
   },
   {
     id: 'cursor_pro',
-    name: 'Cursor Pro',
-    provider: 'Cursor',
+    name: 'Cursor Plus（X Subscription）',
+    provider: 'Cursor / xAI',
     currency: 'USD',
-    price: 20,
-    billingNote: 'AI開発エディタ定番・$20/月（年払いで割安枠あり）',
+    price: 8,
+    billingNote: '新料金体系・$8/月（Claude等はPremium $30＋API従量）',
     tags: ['coding', 'automation'],
     tier: 'standard',
-    summary: '画面を見ながらAIにアプリ・Webサイト制作を丸投げできる非エンジニア開発の本命。',
+    summary: '画面を見ながらAIにWebツール制作を任せられる開発エディタ。新体系ではPlus($8)で自社モデル利用可。',
     perks: [
-      'ClaudeやGPTなど複数社の最新モデルを1つのエディタ内で使い分け可能',
+      '新料金体系（The X Subscription）のPlus（$8/月）でGrok/Composer系を利用可',
       'どのファイルがどう書き換わるか画面上で目視確認しながら進められる',
       'エラー文をワンクリックでAIに投げて修正できる'
     ],
-    caveat: '通常のチャット相談やスマホからの利用には不向き。PCで「何かを作る」ための専門ツール。'
+    caveat: '旧Pro($20)定額での他社モデル利用は新規終了。ClaudeやGPTを使いたい場合はPremium($30/月)以上＋API定価の従量課金が必要。'
   },
   {
     id: 'perplexity_pro',
@@ -770,11 +770,11 @@ const TOOLS = [
     id: 'tool_cursor',
     category: 'coding',
     name: 'Cursor',
-    freeTier: '無料お試し枠あり',
-    paidPrice: 'Pro $20（年払い割安あり）',
-    rating: 5,
-    bestFor: '非エンジニアが画面を見ながらAIにWebツールやスクリプトを作ってもらう最強エディタ。',
-    pitfall: '最初にプロジェクトフォルダをバックアップせずに連続でAIに編集させると、元の正常状態に戻れなくなる（Git保存を習慣化推奨）。'
+    freeTier: 'Freeお試し枠あり',
+    paidPrice: 'Plus $8 / Premium $30〜（他社モデルAPI従量）',
+    rating: 4,
+    bestFor: '画面を見ながらAIにWebツールやスクリプトを作ってもらう開発エディタ（Plus $8はGrok/Composer中心）。',
+    pitfall: '2026年の新料金体系（The X Subscription）以降、Plus($8)ではClaude/GPTが使えず、Premium($30)以上でも他社モデルはAPI定価の別途従量課金になる点に注意。'
   },
   {
     id: 'tool_claude_code',
