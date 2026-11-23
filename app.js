@@ -2,11 +2,22 @@
   'use strict';
 
   const state = {
-    usdJpy: SITE_CONFIG.defaultUsdJpy || 155,
-    simMode: 'diagnose',
+    usdJpy: SITE_CONFIG.defaultUsdJpy || 159,
+    simMode: 'loss',
     selectedGoals: new Set(['research_writing', 'coding']),
     budget: '6500',
     manualSelected: new Set(['google_ai_pro', 'cursor_pro']),
+    loss: {
+      google: 'pro_monthly',
+      googleYtDup: false,
+      googleBfEligible: false,
+      claude: 'web_monthly',
+      claudePersonal: true,
+      chatgpt: 'none',
+      chatgptLight: false,
+      cursor: 'none',
+      unusedCount: 0
+    },
     promptCategory: 'all',
     promptDifficulty: 'all',
     promptQuery: '',
@@ -94,12 +105,17 @@
     document.getElementById('stat-tools').textContent = String(TOOLS.length);
 
     const navX = document.getElementById('nav-x-link');
-    navX.href = xProfileUrl;
-    navX.textContent = handle + ' をフォロー';
+    if (navX) {
+      navX.href = xProfileUrl;
+      navX.textContent = handle + ' をフォロー';
+    }
 
-    document.getElementById('x-follow-link').href = xProfileUrl;
-    document.getElementById('hero-note-link').href = SITE_CONFIG.noteUrl;
-    document.getElementById('note-cta-link').href = SITE_CONFIG.noteUrl;
+    const xFollow = document.getElementById('x-follow-link');
+    if (xFollow) xFollow.href = xProfileUrl;
+    const heroNote = document.getElementById('hero-note-link');
+    if (heroNote) heroNote.href = SITE_CONFIG.noteUrl;
+    const noteCta = document.getElementById('note-cta-link');
+    if (noteCta) noteCta.href = SITE_CONFIG.noteUrl;
     document.getElementById('credit-text-preview').textContent = SITE_CONFIG.siteName + ' · ' + handle;
     document.getElementById('footer-text').textContent =
       SITE_CONFIG.siteName + '｜Created by ' + SITE_CONFIG.authorName + ' (' + handle + ')';
@@ -359,10 +375,10 @@
       const planNames = result.plans.map(function (p) { return p.name; }).join(' + ');
       const url = getShareUrl();
       const lines = [
-        SITE_CONFIG.siteName + ' でAI課金コスパを診断してみた👇',
+        SITE_CONFIG.siteName + ' でAI課金コスパを診断してみた',
         '',
-        '✅ おすすめ構成：' + planNames,
-        '💰 月額目安：約' + formatYen(total) + '（1ドル=' + state.usdJpy + '円換算）',
+        '・おすすめ構成：' + planNames,
+        '・月額目安：約' + formatYen(total) + '（1ドル=' + state.usdJpy + '円換算）',
         '',
         'via ' + getCleanHandle()
       ];
@@ -474,13 +490,522 @@
     shareBtn.onclick = function () {
       const url = getShareUrl();
       const body = count > 0
-        ? '私のAIサブスク構成を計算してみた👇\n' + selectedNames.join(' + ') + '\n合計：約' + formatYen(total) + '/月（1ドル=' + state.usdJpy + '円）\n\nvia ' + getCleanHandle()
-        : SITE_CONFIG.siteName + ' のAI課金シミュレーターで比較中！\n\nvia ' + getCleanHandle();
+        ? 'AIサブスクの月額を計算してみた\n' + selectedNames.join(' + ') + '\n合計：約' + formatYen(total) + '/月（1ドル=' + state.usdJpy + '円）\n\nvia ' + getCleanHandle()
+        : SITE_CONFIG.siteName + ' のAI課金シミュレーターで比較中\n\nvia ' + getCleanHandle();
       openXShare(url ? body + '\n' + url : body);
     };
   }
 
+  function computeLossAnalysis() {
+    const L = state.loss;
+    const rate = state.usdJpy;
+    const feeMul = 1.025;
+    let currentYearly = 0;
+    const findings = [];
+    const warnings = [];
+
+    // 1. Google AI
+    if (L.google === 'pro_monthly') {
+      currentYearly += 2900 * 12;
+      if (L.googleBfEligible) {
+        findings.push({
+          title: 'Google AI Pro：月払い → BF年額半額(14,500円)へ切替',
+          saveYearly: 2900 * 12 - 14500,
+          detail: '月2,900円(年34,800円)から11/26頃までの先行BF半額(年14,500円)へ切り替えると直近月分は返金調整。2年目の定価29,000円更新だけカレンダー推奨。'
+        });
+      } else {
+        findings.push({
+          title: 'Google AI Pro：月払い → 公式年額(29,000円)へ切替',
+          saveYearly: 2900 * 12 - 29000,
+          detail: '1年使う予定なら年額29,000円にするだけで2ヶ月分(5,800円)浮く。対象アカウントなら11/26頃まで初年14,500円表示も確認してみて。'
+        });
+      }
+    } else if (L.google === 'pro_annual') {
+      currentYearly += 29000;
+    } else if (L.google === 'pro_bf') {
+      currentYearly += 14500;
+      warnings.push({
+        title: 'Google AI Pro BF半額：2年目の自動更新に注意',
+        detail: '初年度14,500円のあと、2年目は自動で定価29,000円に更新されるため更新日のメモが安心。'
+      });
+    } else if (L.google === 'ultra_5x') {
+      currentYearly += 14500 * 12;
+    } else if (L.google === 'ultra_20x') {
+      currentYearly += 32000 * 12;
+    }
+
+    if (L.googleYtDup && L.google !== 'none') {
+      currentYearly += 1280 * 12;
+      findings.push({
+        title: 'YouTube Premium(月1,280円)の二重払いを整理',
+        saveYearly: 1280 * 12,
+        detail: 'Google AI Pro以上の特典(YouTube Premium Lite等)へ寄せて個別契約を止めると年15,360円削減。Google One特典タブから手動有効化を忘れずに。'
+      });
+    }
+
+    // 2. Claude
+    const claudeWebMonthly = Math.round(20 * 1.1 * rate * feeMul);
+    const claudeWebYearly = Math.round(200 * 1.1 * rate * feeMul);
+    if (L.claude === 'web_monthly') {
+      currentYearly += claudeWebMonthly * 12;
+      if (L.claudePersonal) {
+        const diffMonthly = Math.max(0, claudeWebMonthly - 3000);
+        if (diffMonthly > 0) {
+          findings.push({
+            title: 'Claude Pro：Webドル建て → 日本iOS App Store(月3,000円)へ',
+            saveYearly: diffMonthly * 12,
+            detail: '1ドル' + rate + '円＋税10%＋海外手数料でWebは月約' + formatYen(claudeWebMonthly) + '。インボイス不要の個人利用ならApp Store固定3,000円が割安。'
+          });
+        }
+      } else {
+        warnings.push({
+          title: 'Claude Pro：インボイス(適格請求書)要ならWeb直販を維持',
+          detail: 'App Store経由はApple名義になりAnthropicの適格請求書が出ないため、経費精算・法人利用ならWeb直販一択。'
+        });
+      }
+    } else if (L.claude === 'ios_monthly') {
+      currentYearly += 3000 * 12;
+    } else if (L.claude === 'web_annual') {
+      currentYearly += claudeWebYearly;
+    } else if (L.claude === 'max') {
+      currentYearly += Math.round(100 * 1.1 * rate * feeMul) * 12;
+    }
+
+    // 3. ChatGPT
+    if (L.chatgpt === 'plus') {
+      currentYearly += 3000 * 12;
+      if (L.chatgptLight) {
+        findings.push({
+          title: 'ChatGPT：Plus(3,000円) → Go(1,400円)へ見直し',
+          saveYearly: (3000 - 1400) * 12,
+          detail: '重い推論やDeep Researchを毎日使わないなら、円建て同額のChatGPT Go(1,400円)に落とすだけで年19,200円浮く。'
+        });
+      }
+    } else if (L.chatgpt === 'go') {
+      currentYearly += 1400 * 12;
+    }
+
+    // 4. Cursor
+    if (L.cursor === 'old_pro') {
+      currentYearly += Math.round(20 * rate * feeMul) * 12;
+      warnings.push({
+        title: 'Cursor 旧Pro($20)維持中：新プランへの誤切替に厳重注意',
+        detail: '2026年10月の統合後、一度でも新プランへ切り替えると旧Pro($20)には戻せない仕様。切替ボタンを押さないのが鉄則。'
+      });
+    } else if (L.cursor === 'new_plus') {
+      currentYearly += Math.round(8 * rate * feeMul) * 12;
+      warnings.push({
+        title: 'Cursor 新Plus($8)：自社モデル専用に注意',
+        detail: 'Plus($8)ではClaudeやGPTが選べないため、他社モデル目当てで追加課金する前に役割を整理しておくとムダがない。'
+      });
+    } else if (L.cursor === 'new_premium') {
+      currentYearly += Math.round(30 * rate * feeMul) * 12;
+      warnings.push({
+        title: 'Cursor Premium($30)：他社モデルのAPI従量課金に注意',
+        detail: 'Claude/GPTの利用分は月額$30とは別に各社API定価の従量課金が発生。普段使いは定額プランへ逃がすと膨らみにくい。'
+      });
+    }
+
+    // 5. 放置枠
+    if (L.unusedCount > 0) {
+      currentYearly += 3000 * 12 * L.unusedCount;
+      findings.push({
+        title: 'ほとんど開いていない月3,000円枠(' + L.unusedCount + '本)を休止',
+        saveYearly: 3000 * 12 * L.unusedCount,
+        detail: '使わない月だけ一旦止めて、必要な月だけ入り直すスポット運用にすると大きく固定費を削れる。'
+      });
+    }
+
+    const totalSaveYearly = findings.reduce(function (sum, f) { return sum + f.saveYearly; }, 0);
+    return {
+      rate: rate,
+      currentYearly: currentYearly,
+      currentMonthly: Math.round(currentYearly / 12),
+      saveYearly: totalSaveYearly,
+      saveMonthly: Math.round(totalSaveYearly / 12),
+      afterYearly: Math.max(0, currentYearly - totalSaveYearly),
+      findings: findings,
+      warnings: warnings
+    };
+  }
+
+  function renderLossInputs() {
+    const container = document.getElementById('loss-inputs');
+    if (!container) return;
+    const L = state.loss;
+    container.innerHTML = '';
+
+    const head = document.createElement('div');
+    head.className = 'loss-inputs-head';
+    const h3 = document.createElement('h3');
+    h3.textContent = '今の契約状況をチェック（10秒）';
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'btn btn-outline btn-sm';
+    resetBtn.textContent = 'すべて未契約に';
+    resetBtn.addEventListener('click', function () {
+      state.loss = {
+        google: 'none',
+        googleYtDup: false,
+        googleBfEligible: false,
+        claude: 'none',
+        claudePersonal: true,
+        chatgpt: 'none',
+        chatgptLight: false,
+        cursor: 'none',
+        unusedCount: 0
+      };
+      renderLossInputs();
+      renderLossDiagnosis();
+    });
+    head.appendChild(h3);
+    head.appendChild(resetBtn);
+    container.appendChild(head);
+
+    function addPillGroup(title, options, currentVal, onSelect, checks) {
+      const grp = document.createElement('div');
+      grp.className = 'loss-group';
+      const pTitle = document.createElement('p');
+      pTitle.className = 'loss-group-title';
+      pTitle.textContent = title;
+      grp.appendChild(pTitle);
+
+      const pills = document.createElement('div');
+      pills.className = 'loss-pills';
+      options.forEach(function (opt) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'loss-pill' + (currentVal === opt.id ? ' active' : '');
+        b.textContent = opt.label;
+        b.addEventListener('click', function () {
+          onSelect(opt.id);
+          renderLossInputs();
+          renderLossDiagnosis();
+        });
+        pills.appendChild(b);
+      });
+      grp.appendChild(pills);
+
+      if (checks && checks.length > 0) {
+        const cWrap = document.createElement('div');
+        cWrap.className = 'loss-checks';
+        checks.forEach(function (chk) {
+          if (chk.visible === false) return;
+          const lbl = document.createElement('label');
+          lbl.className = 'loss-check';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = Boolean(chk.checked);
+          cb.addEventListener('change', function () {
+            chk.onChange(cb.checked);
+            renderLossDiagnosis();
+          });
+          const sp = document.createElement('span');
+          sp.textContent = chk.label;
+          lbl.appendChild(cb);
+          lbl.appendChild(sp);
+          cWrap.appendChild(lbl);
+        });
+        if (cWrap.childNodes.length > 0) grp.appendChild(cWrap);
+      }
+      container.appendChild(grp);
+    }
+
+    addPillGroup(
+      '1. Google AI（Gemini / 5TB）',
+      [
+        { id: 'none', label: '未契約' },
+        { id: 'pro_monthly', label: 'Pro 月2,900円' },
+        { id: 'pro_annual', label: 'Pro 年29,000円' },
+        { id: 'pro_bf', label: 'Pro BF半額14,500円' },
+        { id: 'ultra_5x', label: 'Ultra 5x' },
+        { id: 'ultra_20x', label: 'Ultra 20x' }
+      ],
+      L.google,
+      function (v) { L.google = v; },
+      [
+        {
+          visible: L.google === 'pro_monthly',
+          checked: L.googleBfEligible,
+          label: '11/26頃までの先行BF半額（初年14,500円）対象が表示されている',
+          onChange: function (c) { L.googleBfEligible = c; }
+        },
+        {
+          visible: L.google !== 'none',
+          checked: L.googleYtDup,
+          label: '別で通常のYouTube Premium（月1,280円）も契約中（YouTube Music不要）',
+          onChange: function (c) { L.googleYtDup = c; }
+        }
+      ]
+    );
+
+    addPillGroup(
+      '2. Claude（Anthropic）',
+      [
+        { id: 'none', label: '未契約' },
+        { id: 'web_monthly', label: 'Pro Web直販($20+税)' },
+        { id: 'ios_monthly', label: 'Pro iOS(3,000円)' },
+        { id: 'web_annual', label: 'Pro Web年払($200+税)' },
+        { id: 'max', label: 'Max($100〜)' }
+      ],
+      L.claude,
+      function (v) { L.claude = v; },
+      [
+        {
+          visible: L.claude === 'web_monthly',
+          checked: L.claudePersonal,
+          label: '個人利用（法人の適格請求書・インボイスは不要）',
+          onChange: function (c) { L.claudePersonal = c; }
+        }
+      ]
+    );
+
+    addPillGroup(
+      '3. ChatGPT（OpenAI）',
+      [
+        { id: 'none', label: '未契約' },
+        { id: 'plus', label: 'Plus (3,000円)' },
+        { id: 'go', label: 'Go (1,400円)' }
+      ],
+      L.chatgpt,
+      function (v) { L.chatgpt = v; },
+      [
+        {
+          visible: L.chatgpt === 'plus',
+          checked: L.chatgptLight,
+          label: '重い推論やDeep Researchは毎日使わない（軽い相談中心）',
+          onChange: function (c) { L.chatgptLight = c; }
+        }
+      ]
+    );
+
+    addPillGroup(
+      '4. Cursor（X統合後）',
+      [
+        { id: 'none', label: '未契約' },
+        { id: 'old_pro', label: '旧Pro ($20維持)' },
+        { id: 'new_plus', label: '新Plus ($8)' },
+        { id: 'new_premium', label: '新Premium ($30+従量)' }
+      ],
+      L.cursor,
+      function (v) { L.cursor = v; },
+      []
+    );
+
+    addPillGroup(
+      '5. 1ヶ月ほぼ開いていない月3,000円クラスのAI',
+      [
+        { id: 0, label: '0本（なし）' },
+        { id: 1, label: '1本ある' },
+        { id: 2, label: '2本ある' }
+      ],
+      L.unusedCount,
+      function (v) { L.unusedCount = Number(v); },
+      []
+    );
+  }
+
+  function fillRoundRect(ctx, x, y, w, h, r, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  function drawLossCardCanvas(analysis) {
+    const canvas = document.getElementById('loss-share-canvas');
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const W = 1200;
+    const H = 630;
+    const fontMain = '"Yu Gothic UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif';
+
+    ctx.fillStyle = '#0b1120';
+    ctx.fillRect(0, 0, W, H);
+
+    // Subtle radial glow
+    const grad = ctx.createRadialGradient(240, 120, 20, 240, 120, 520);
+    grad.addColorStop(0, 'rgba(251, 191, 36, 0.14)');
+    grad.addColorStop(1, 'rgba(11, 17, 32, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Header pill + title
+    fillRoundRect(ctx, 52, 40, 270, 38, 19, 'rgba(56, 189, 248, 0.14)', 'rgba(56, 189, 248, 0.5)');
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 18px ' + fontMain;
+    ctx.fillText('2026年11月 AI課金見直し診断', 72, 66);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 20px ' + fontMain;
+    ctx.textAlign = 'right';
+    ctx.fillText(getCleanHandle(), W - 52, 66);
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '800 34px ' + fontMain;
+    ctx.fillText('AIサブスク 年間ロス10秒チェック結果', 52, 124);
+
+    // KPI boxes
+    fillRoundRect(ctx, 52, 148, 534, 134, 16, '#131c31', '#253451');
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 18px ' + fontMain;
+    ctx.fillText('いまの年間目安（1ドル=' + analysis.rate + '円換算）', 78, 184);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '800 44px ' + fontMain;
+    ctx.fillText('約 ' + formatYen(analysis.currentYearly) + ' / 年', 78, 242);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 16px ' + fontMain;
+    ctx.fillText('月額換算：約 ' + formatYen(analysis.currentMonthly) + ' / 月', 78, 268);
+
+    fillRoundRect(ctx, 614, 148, 534, 134, 16, '#1a1a10', '#fbbf24');
+    ctx.fillStyle = '#fde68a';
+    ctx.font = 'bold 18px ' + fontMain;
+    ctx.fillText('見直しで浮く可能性がある金額', 640, 184);
+    ctx.fillStyle = analysis.saveYearly > 0 ? '#fbbf24' : '#4ade80';
+    ctx.font = '800 46px ' + fontMain;
+    ctx.fillText(
+      analysis.saveYearly > 0 ? ('年 ' + formatYen(analysis.saveYearly) + ' 得') : 'ロス 0円（最適化済）',
+      640,
+      242
+    );
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = 'bold 16px ' + fontMain;
+    ctx.fillText(
+      analysis.saveYearly > 0
+        ? ('月あたり約 ' + formatYen(analysis.saveMonthly) + ' 削減')
+        : '今の構成にムダな決済ズレは見当たりません',
+      640,
+      268
+    );
+
+    // Findings list
+    fillRoundRect(ctx, 52, 304, 1096, 254, 16, '#131c31', '#253451');
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 19px ' + fontMain;
+    ctx.fillText('見つかった主な見直しポイント', 78, 340);
+
+    const rows = analysis.findings.slice(0, 3);
+    if (rows.length === 0) {
+      ctx.fillStyle = '#4ade80';
+      ctx.font = 'bold 24px ' + fontMain;
+      ctx.fillText('✓ 課金ルートや二重払いのロスは見つかりませんでした', 78, 412);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '20px ' + fontMain;
+      ctx.fillText('※為替・キャンペーン・年額更新日だけ定期確認がおすすめ', 78, 456);
+    } else {
+      rows.forEach(function (item, idx) {
+        const ry = 360 + idx * 60;
+        fillRoundRect(ctx, 76, ry, 1048, 50, 10, '#0f172a', '#253451');
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 19px ' + fontMain;
+        const label = (idx + 1) + '. ' + item.title;
+        ctx.fillText(label.slice(0, 56), 96, ry + 32, 830);
+
+        ctx.fillStyle = '#4ade80';
+        ctx.font = '800 20px ' + fontMain;
+        ctx.textAlign = 'right';
+        ctx.fillText('-' + formatYen(item.saveYearly) + '/年', 1102, ry + 32);
+        ctx.textAlign = 'left';
+      });
+    }
+
+    // Footer
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 16px ' + fontMain;
+    ctx.fillText(SITE_CONFIG.siteName + '（chikuwa-ai.github.io/chikuwa-ai-box/）', 52, 594);
+    ctx.textAlign = 'right';
+    ctx.fillText('※2026年11月時点目安・最終金額は公式決済画面を確認', W - 52, 594);
+    ctx.textAlign = 'left';
+  }
+
+  function renderLossDiagnosis() {
+    const area = document.getElementById('loss-summary-area');
+    if (!area) return;
+    const analysis = computeLossAnalysis();
+    area.innerHTML = '';
+
+    const hero = document.createElement('div');
+    hero.className = 'loss-hero-box';
+
+    const k1 = document.createElement('div');
+    k1.className = 'loss-kpi';
+    k1.innerHTML =
+      '<span class="loss-kpi-label">いまの年間目安</span>' +
+      '<strong class="loss-kpi-val">' + formatYen(analysis.currentYearly) + '</strong>' +
+      '<span class="loss-kpi-sub">月額換算：約 ' + formatYen(analysis.currentMonthly) + ' / 月</span>';
+
+    const k2 = document.createElement('div');
+    k2.className = 'loss-kpi is-save';
+    k2.innerHTML =
+      '<span class="loss-kpi-label">見直しで浮く金額</span>' +
+      '<strong class="loss-kpi-val">' + (analysis.saveYearly > 0 ? ('年 ' + formatYen(analysis.saveYearly)) : '0円') + '</strong>' +
+      '<span class="loss-kpi-sub">月あたり約 ' + formatYen(analysis.saveMonthly) + ' 節約余地</span>';
+
+    hero.appendChild(k1);
+    hero.appendChild(k2);
+    area.appendChild(hero);
+
+    if (analysis.findings.length > 0) {
+      const cards = document.createElement('div');
+      cards.className = 'loss-cards';
+      analysis.findings.forEach(function (f) {
+        const c = document.createElement('div');
+        c.className = 'loss-card';
+        const top = document.createElement('div');
+        top.className = 'loss-card-top';
+        const st = document.createElement('strong');
+        st.textContent = f.title;
+        const bdg = document.createElement('span');
+        bdg.className = 'badge badge-accent';
+        bdg.textContent = '年 -' + formatYen(f.saveYearly);
+        top.appendChild(st);
+        top.appendChild(bdg);
+        const p = document.createElement('p');
+        p.textContent = f.detail;
+        c.appendChild(top);
+        c.appendChild(p);
+        cards.appendChild(c);
+      });
+      area.appendChild(cards);
+    } else {
+      const okBox = document.createElement('div');
+      okBox.className = 'loss-empty-ok';
+      okBox.textContent = '✓ いまの選択では大きな課金ロスは見つかりませんでした。下の警告・注意点だけ確認してみて。';
+      area.appendChild(okBox);
+    }
+
+    analysis.warnings.forEach(function (w) {
+      const wc = document.createElement('div');
+      wc.className = 'loss-warn-card';
+      const wst = document.createElement('strong');
+      wst.textContent = '⚠️ ' + w.title;
+      const wsp = document.createElement('span');
+      wsp.textContent = w.detail;
+      wc.appendChild(wst);
+      wc.appendChild(wsp);
+      area.appendChild(wc);
+    });
+
+    drawLossCardCanvas(analysis);
+  }
+
   function renderSimulator() {
+    renderLossInputs();
+    renderLossDiagnosis();
     renderGoals();
     renderDiagnosis();
     renderManualSimulator();
@@ -613,7 +1138,7 @@
   function sharePromptToX(prompt) {
     const url = getShareUrl();
     const lines = [
-      '『' + prompt.title + '』がそのまま使えて便利だった👇',
+      '『' + prompt.title + '』がそのまま使えて便利だった',
       '',
       prompt.summary,
       '',
@@ -728,39 +1253,101 @@
     });
   }
 
+  function switchSimMode(mode) {
+    state.simMode = mode;
+    const lossBtn = document.getElementById('mode-loss-btn');
+    const diagBtn = document.getElementById('mode-diagnose-btn');
+    const manBtn = document.getElementById('mode-manual-btn');
+    const lossPanel = document.getElementById('loss-panel');
+    const diagPanel = document.getElementById('diagnose-panel');
+    const manPanel = document.getElementById('manual-panel');
+
+    const map = [
+      { id: 'loss', btn: lossBtn, panel: lossPanel },
+      { id: 'diagnose', btn: diagBtn, panel: diagPanel },
+      { id: 'manual', btn: manBtn, panel: manPanel }
+    ];
+    map.forEach(function (entry) {
+      const on = entry.id === mode;
+      if (entry.btn) {
+        entry.btn.classList.toggle('active', on);
+        entry.btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+      if (entry.panel) entry.panel.classList.toggle('hidden', !on);
+    });
+  }
+
   function bindEvents() {
     const slider = document.getElementById('usd-jpy-slider');
     slider.addEventListener('input', function () {
       state.usdJpy = Number(slider.value);
       updateRateLabels();
+      renderLossDiagnosis();
       renderDiagnosis();
       renderManualSimulator();
     });
 
+    const lossBtn = document.getElementById('mode-loss-btn');
     const diagBtn = document.getElementById('mode-diagnose-btn');
     const manBtn = document.getElementById('mode-manual-btn');
-    const diagPanel = document.getElementById('diagnose-panel');
-    const manPanel = document.getElementById('manual-panel');
 
-    diagBtn.addEventListener('click', function () {
-      state.simMode = 'diagnose';
-      diagBtn.classList.add('active');
-      manBtn.classList.remove('active');
-      diagBtn.setAttribute('aria-selected', 'true');
-      manBtn.setAttribute('aria-selected', 'false');
-      diagPanel.classList.remove('hidden');
-      manPanel.classList.add('hidden');
-    });
+    if (lossBtn) lossBtn.addEventListener('click', function () { switchSimMode('loss'); });
+    if (diagBtn) diagBtn.addEventListener('click', function () { switchSimMode('diagnose'); });
+    if (manBtn) manBtn.addEventListener('click', function () { switchSimMode('manual'); });
 
-    manBtn.addEventListener('click', function () {
-      state.simMode = 'manual';
-      manBtn.classList.add('active');
-      diagBtn.classList.remove('active');
-      manBtn.setAttribute('aria-selected', 'true');
-      diagBtn.setAttribute('aria-selected', 'false');
-      manPanel.classList.remove('hidden');
-      diagPanel.classList.add('hidden');
-    });
+    const navLossLink = document.getElementById('nav-loss-link');
+    if (navLossLink) navLossLink.addEventListener('click', function () { switchSimMode('loss'); });
+    const heroLossCta = document.getElementById('hero-loss-cta');
+    if (heroLossCta) heroLossCta.addEventListener('click', function () { switchSimMode('loss'); });
+
+    const pngBtn = document.getElementById('loss-png-btn');
+    if (pngBtn) {
+      pngBtn.addEventListener('click', function () {
+        const canvas = document.getElementById('loss-share-canvas');
+        if (!canvas) return;
+        const a = document.createElement('a');
+        a.download = 'ai_billing_check.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+        showToast('診断カードPNGを保存しました');
+      });
+    }
+
+    const lossShareBtn = document.getElementById('loss-share-btn');
+    if (lossShareBtn) {
+      lossShareBtn.addEventListener('click', function () {
+        const a = computeLossAnalysis();
+        const url = getShareUrl();
+        const topLines = a.findings.slice(0, 2).map(function (f) {
+          return '・' + f.title + '（年 -' + formatYen(f.saveYearly) + '）';
+        });
+        const lines = [
+          a.saveYearly > 0
+            ? 'AI課金の年間ロスを計算してみたら、見直し余地が年' + formatYen(a.saveYearly) + 'あった。'
+            : 'AI課金の年間ロスをチェックしてみたらムダは0円だった。',
+          ''
+        ].concat(topLines);
+        lines.push('', 'via ' + getCleanHandle());
+        if (url) lines.push(url);
+        openXShare(lines.join('\n'));
+      });
+    }
+
+    const lossCopyBtn = document.getElementById('loss-copy-btn');
+    if (lossCopyBtn) {
+      lossCopyBtn.addEventListener('click', function () {
+        const a = computeLossAnalysis();
+        const items = a.findings.map(function (f) {
+          return '・' + f.title + '（年 -' + formatYen(f.saveYearly) + '）';
+        });
+        const txt = [
+          '【AI課金 年間ロス診断結果】',
+          '現在目安：年 ' + formatYen(a.currentYearly) + '（月 ' + formatYen(a.currentMonthly) + '）',
+          '見直し余地：年 ' + formatYen(a.saveYearly) + '（月 ' + formatYen(a.saveMonthly) + '）'
+        ].concat(items).join('\n');
+        copyText(txt, '診断結果をコピーしました');
+      });
+    }
 
     document.querySelectorAll('#budget-radios .pill-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {

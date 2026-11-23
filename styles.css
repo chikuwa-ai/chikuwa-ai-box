@@ -1022,3 +1022,230 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+/* Annual Loss Diagnosis Panel */
+.loss-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1.15fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.loss-inputs-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.loss-inputs-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.loss-group {
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.loss-group + .loss-group {
+  margin-top: 12px;
+}
+
+.loss-group-title {
+  margin: 0 0 9px;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.loss-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.loss-pill {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loss-pill:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.loss-pill.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+.loss-checks {
+  display: grid;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.loss-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.loss-check input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.loss-result {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.loss-hero-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.loss-kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.loss-kpi.is-save {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.loss-kpi-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.loss-kpi-val {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.loss-kpi.is-save .loss-kpi-val {
+  color: var(--accent-strong);
+}
+
+.loss-kpi-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.loss-cards {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.loss-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 9px;
+  padding: 11px 13px;
+}
+
+.loss-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.loss-card-top strong {
+  font-size: 13.5px;
+}
+
+.loss-card p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.loss-warn-card {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  color: var(--warn-text);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+
+.loss-warn-card strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.loss-empty-ok {
+  background: var(--surface);
+  border: 1px solid var(--teal);
+  border-radius: 9px;
+  padding: 12px 14px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.loss-canvas-wrap {
+  margin-bottom: 12px;
+}
+
+.loss-canvas-label {
+  margin: 0 0 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+#loss-share-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 880px) {
+  .loss-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .loss-hero-box {
+    grid-template-columns: 1fr;
+  }
+}

@@ -29,10 +29,9 @@
       </a>
 
       <nav class="main-nav" aria-label="メインナビゲーション">
-        <a href="#simulator">コスパ診断</a>
+        <a href="#simulator" id="nav-loss-link">年間ロス診断</a>
         <a href="#prompts">プロンプト図鑑</a>
         <a href="#tools">ツール早見表</a>
-        <a href="#rights">利用ルール・note</a>
       </nav>
 
       <div class="header-actions">
@@ -54,16 +53,16 @@
           <div class="hero-badges">
             <span class="badge badge-accent" id="updated-badge">最終更新：2026年11月</span>
             <span class="badge">登録不要・完全無料</span>
-            <span class="badge">コピペ＆商用利用OK（クレジット表記）</span>
+            <span class="badge">ブラウザ内完結・外部送信ゼロ</span>
           </div>
-          <h1>結局どのAIに課金すべき？を<br>10秒で解決する道具箱。</h1>
+          <h1>AI課金の年間ロス診断＆<br>コピペで使える道具箱。</h1>
           <p class="hero-lead">
-            専門用語ナシ・非エンジニア目線で、主要AIサブスクの最新料金シミュレーション、そのまま使える実務・開発プロンプト、初心者がハマりやすい罠まで1ページにまとめました。
+            主要AIサブスクの最新料金・最安決済ルート・年間損額の10秒診断、用途別おすすめ比較、コピペ用プロンプトまで1か所にまとめました。
           </p>
           <div class="hero-cta">
-            <a href="#simulator" class="btn btn-primary">まずはコスパ診断をする ↓</a>
+            <a href="#simulator" id="hero-loss-cta" class="btn btn-primary">まずは年間ロスを10秒診断 ↓</a>
             <a href="#prompts" class="btn btn-outline">プロンプト図鑑を見る</a>
-            <a id="hero-note-link" href="https://note.com/" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">note手順書を見る ↗</a>
+            <a href="#tools" class="btn btn-ghost">ツール早見表を見る</a>
           </div>
         </div>
 
@@ -90,22 +89,25 @@
         <div class="section-head">
           <div>
             <p class="section-kicker">01 / SUBSCRIPTION SIMULATOR</p>
-            <h2>AIサブスク「コスパ診断＆月額シミュレーター」</h2>
-            <p class="section-desc">円建てプラン（Google AI / ChatGPT）とドル建てプラン（Claude / Cursor等）を為替レート込みで比較できます。</p>
+            <h2>AI課金「年間ロス診断＆月額シミュレーター」</h2>
+            <p class="section-desc">2026年11月の為替・消費税10%・ストア価格差・特典の二重払いを10秒で計算できます。</p>
           </div>
 
           <div class="rate-box" aria-label="為替レート設定">
             <div class="rate-row">
               <label for="usd-jpy-slider">ドル円換算レート</label>
-              <strong id="usd-jpy-value">1ドル = 155円</strong>
+              <strong id="usd-jpy-value">1ドル = 159円</strong>
             </div>
-            <input id="usd-jpy-slider" type="range" min="130" max="180" step="1" value="155">
-            <small class="rate-hint">※$20プラン ≒ <span id="sample-20usd">3,100円</span>（カード手数料別）</small>
+            <input id="usd-jpy-slider" type="range" min="130" max="180" step="1" value="159">
+            <small class="rate-hint">※$20プラン ≒ <span id="sample-20usd">3,180円</span>（税別・手数料別）</small>
           </div>
         </div>
 
         <div class="mode-switch" role="tablist" aria-label="シミュレーターのモード切替">
-          <button id="mode-diagnose-btn" type="button" class="mode-tab active" role="tab" aria-selected="true">
+          <button id="mode-loss-btn" type="button" class="mode-tab active" role="tab" aria-selected="true">
+            💸 年間ロス10秒診断
+          </button>
+          <button id="mode-diagnose-btn" type="button" class="mode-tab" role="tab" aria-selected="false">
             ✨ 用途×予算からおすすめ診断
           </button>
           <button id="mode-manual-btn" type="button" class="mode-tab" role="tab" aria-selected="false">
@@ -113,8 +115,27 @@
           </button>
         </div>
 
+        <!-- Loss Diagnosis Mode -->
+        <div id="loss-panel" class="panel-box">
+          <div class="loss-grid">
+            <div class="loss-inputs" id="loss-inputs"></div>
+            <div class="loss-result">
+              <div id="loss-summary-area" aria-live="polite"></div>
+              <div class="loss-canvas-wrap">
+                <p class="loss-canvas-label">X添付用 診断カード（ブラウザ内で自動生成）</p>
+                <canvas id="loss-share-canvas" width="1200" height="630"></canvas>
+              </div>
+              <div class="diag-actions">
+                <button id="loss-png-btn" type="button" class="btn btn-primary">🖼️ 結果カードPNGを保存</button>
+                <button id="loss-share-btn" type="button" class="btn btn-outline">Xで結果をシェア</button>
+                <button id="loss-copy-btn" type="button" class="btn btn-ghost">📋 結果をコピー</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Diagnose Mode -->
-        <div id="diagnose-panel" class="panel-box">
+        <div id="diagnose-panel" class="panel-box hidden">
           <div class="diagnose-grid">
             <div class="diagnose-inputs">
               <div class="control-group">

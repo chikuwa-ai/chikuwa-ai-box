@@ -11,8 +11,8 @@ const SITE_CONFIG = {
   authorName: 'ちくわ',
   xHandle: '@chikuwa_ai_box', // ← あなたのXハンドル（@付き）に書き換えてください
   noteUrl: 'https://note.com/', // ← あなたのnoteプロフィールまたは記事URLに書き換えてください
-  updatedAt: '2026年11月22日',
-  defaultUsdJpy: 155,
+  updatedAt: '2026年11月23日',
+  defaultUsdJpy: 159,
   siteUrlHint: '' // 空文字の場合、公開時の現在URL（https://〜）を自動で使用します
 };
 
@@ -68,16 +68,17 @@ const SUBSCRIPTIONS = [
     provider: 'Google',
     currency: 'JPY',
     price: 2900,
-    billingNote: '定番主力・月額固定（円建て）',
+    billingNote: '定番主力・月額2,900円／年29,000円（11/26頃まで先行BF半額 年14,500円対象あり）',
     tags: ['research_writing', 'automation', 'storage', 'creative'],
     tier: 'standard',
-    summary: 'Gemini上位モデル＋5TBクラウド＋Gmail/Docs連携まで付く総合コスパ最強枠。',
+    summary: 'Gemini上位モデル＋5TBクラウド＋YouTube Lite＋開発クレジットまで付く総合コスパ最強枠。',
     perks: [
       '上位Geminiモデル・長文解析・リサーチ機能が充実',
       'Google One 5TBクラウドストレージ込みで単体計算のコスパが高い',
-      'Gmail / スプレッドシート / Googleドキュメント上で直接AI呼び出し'
+      'YouTube Premium Lite（単体 月780円相当）付帯',
+      '開発者クレジット 月$10（主契約者のみ・請求先設定要）'
     ],
-    caveat: 'Googleサービスを普段あまり使わない人や、ローカルでのAIコーディング特化ならClaude/Cursor優先。'
+    caveat: '通常YouTube Premiumとの二重課金・無料期間中はLite非適用・BF半額は2年目定価29,000円自動更新に注意。'
   },
   {
     id: 'chatgpt_go',
@@ -85,7 +86,7 @@ const SUBSCRIPTIONS = [
     provider: 'OpenAI',
     currency: 'JPY',
     price: 1400,
-    billingNote: 'ライト向け・月額固定（円建て）',
+    billingNote: 'ライト向け・月額1,400円（Web・アプリ一律税込固定）',
     tags: ['research_writing', 'automation'],
     tier: 'light',
     summary: 'ChatGPTの使いやすさは欲しいが月3,000円はまだ重い人向けの手頃プラン。',
@@ -102,7 +103,7 @@ const SUBSCRIPTIONS = [
     provider: 'OpenAI',
     currency: 'JPY',
     price: 3000,
-    billingNote: '定番主力・月額3,000円（税込）',
+    billingNote: '定番主力・月額3,000円（Web・アプリ一律税込固定）',
     tags: ['research_writing', 'automation', 'creative', 'coding'],
     tier: 'standard',
     summary: '文章・リサーチ・画像生成・簡単なコード生成まで1つで何でもこなす王道プラン。',
@@ -119,16 +120,16 @@ const SUBSCRIPTIONS = [
     provider: 'Anthropic',
     currency: 'USD',
     price: 20,
-    billingNote: '定番主力・$20/月（為替で変動）',
+    billingNote: 'Web直販 $20/月＋税10%（約3,570〜3,630円）／iOS App Store 3,000円税込固定',
     tags: ['research_writing', 'coding', 'automation'],
     tier: 'standard',
-    summary: '自然な日本語文章・長文読解・非エンジニアのツール自作（Artifacts/Claude Code）の最強相棒。',
+    summary: '自然な日本語文章・長文読解・ツール自作（Artifacts/Claude Code）の最強相棒。',
     perks: [
       '日本語のトーンが自然で「AIっぽさ」が少ない文章が出やすい',
       'Artifacts機能でその場でHTMLツールや図解のプレビューが可能',
       'Sonnet / Opus等の高性能モデルで開発・構成力が非常に高い'
     ],
-    caveat: 'ヘビーに連続利用すると5時間ごとの利用上限に当たることがある。ドル建て決済のためカード手数料込みで計算を。'
+    caveat: '2026年4月から日本Web直販は消費税10%加算。個人利用ならiOS App Store(月3,000円)が年約7,000円お得（法人・インボイス必要ならWeb直販一択）。'
   },
   {
     id: 'claude_max',
